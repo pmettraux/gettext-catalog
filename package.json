@@ -1,0 +1,39 @@
+{
+  "name": "gettext-catalog",
+  "version": "0.0.0",
+  "description": "Keep track of extracted gettext strings across multiple files",
+  "author": "Gabe Gorelick",
+  "license": "MIT",
+  "keywords": [
+    "gettext",
+    "xgettext",
+    "i18n",
+    "translate",
+    "translation"
+  ],
+  "files": [
+    "index.js"
+  ],
+  "homepage": "https://github.com/gabegorelick/gettext-catalog",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gabegorelick/gettext-catalog"
+  },
+  "bugs": {
+    "url": "https://github.com/gabegorelick/gettext-catalog/issues"
+  },
+  "main": "./index.js",
+  "dependencies": {
+    "binary-search": "^1.2.0",
+    "pofile": "^0.2.12"
+  },
+  "devDependencies": {
+    "jscs": "^1.12.0",
+    "jshint": "^2.6.3",
+    "mocha": "^2.2.1",
+    "should": "^5.2.0"
+  },
+  "scripts": {
+    "test": "jscs *.js test/*.js && jshint *.js test/*.js && mocha"
+  }
+}
