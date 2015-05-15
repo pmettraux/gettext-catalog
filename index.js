@@ -3,27 +3,90 @@
 var search = require('binary-search');
 var PO = require('pofile');
 
-function Catalog() {
+function Catalog (options) {
+  // make new optional
   if (!(this instanceof Catalog)) {
-    return new Catalog();
+    return new Catalog(options);
   }
 
-  this.strings = {};
+  options = options || {};
+
+  var identifiers = options.identifiers || Catalog.DEFAULT_IDENTIFIERS;
+
+  Object.keys(identifiers).forEach(function (id) {
+    if (identifiers[id].indexOf('msgid') === -1) {
+      throw new Error('Every id must have a msgid parameter, but "' + id + '" doesn\'t have one');
+    }
+  });
+
+  this.identifiers = identifiers;
+
+  // domain to be used when none is specified
+  if (options.defaultDomain || options.defaultDomain === '') { // empty domain is a valid domain
+    this.defaultDomain = options.defaultDomain;
+  } else {
+    this.defaultDomain = 'messages';
+  }
+
+  // name of subexpressions to extract comments from
+  this.commentIdentifiers = options.commentIdentifiers || ['gettext-comment'];
+  if (!Array.isArray(this.commentIdentifiers)) {
+    this.commentIdentifiers = [this.commentIdentifiers];
+  }
+
+  this.filename = options.filename;
+
+  // strings added with the appropriately named `addString` method get stored here
+  this.messages = {};
 }
 
-Catalog.prototype.addStrings = function addStrings(strings) {
-  var existingStrings = this.strings;
-  Object.keys(strings).forEach(function (domain) {
+Catalog.DEFAULT_IDENTIFIERS = (function () {
+  // n and category shouldn't be needed in your PO files, but we try to mirror
+  // the gettext API as much as possible
+  var specs = {
+    gettext: ['msgid'],
+    dgettext: ['domain', 'msgid'],
+    dcgettext: ['domain', 'msgid', 'category'],
+    ngettext: ['msgid', 'msgid_plural', 'n'],
+    dngettext: ['domain', 'msgid', 'msgid_plural', 'n'],
+    dcngettext: ['domain', 'msgid', 'msgid_plural', 'n', 'category'],
+    pgettext: ['msgctxt', 'msgid'],
+    dpgettext: ['domain', 'msgctxt', 'msgid'],
+    npgettext: ['msgctxt', 'msgid', 'msgid_plural', 'n'],
+    dnpgettext: ['domain', 'msgctxt', 'msgid', 'msgid_plural', 'n'],
+    dcnpgettext: ['domain', 'msgctxt', 'msgid', 'msgid_plural', 'n', 'category']
+  };
+
+  return Object.keys(specs).reduce(function (identifiers, id) {
+    // Add commonly used shorthands for each helper:
+    // gettext -> _, dgettext -> d_, dcgettext -> dc_, etc.
+    identifiers[id.replace('gettext', '_')] = identifiers[id];
+    return identifiers;
+  }, specs);
+})();
+
+// Same as what Jed.js uses
+Catalog.CONTEXT_DELIMITER = String.fromCharCode(4);
+
+Catalog.prototype.messageToKey = function messageToKey (msgid, msgctxt) {
+  return msgctxt ? msgctxt + Catalog.CONTEXT_DELIMITER + msgid : msgid;
+};
+
+Catalog.prototype.addMessages = function addMessages (messages) {
+  var existingStrings = this.messages;
+
+  // TODO delegate to addMessage function
+  Object.keys(messages).forEach(function (domain) {
     if (!existingStrings[domain]) {
       // we haven't encountered this domain yet
-      existingStrings[domain] = strings[domain];
+      existingStrings[domain] = messages[domain];
 
       // TODO add missing fields like references
       return;
     }
 
-    Object.keys(strings[domain]).forEach(function (key) {
-      var message = strings[domain][key];
+    Object.keys(messages[domain]).forEach(function (key) {
+      var message = messages[domain][key];
       var existingMessage = existingStrings[domain][key];
 
       if (!existingMessage) {
@@ -70,12 +133,40 @@ Catalog.prototype.addStrings = function addStrings(strings) {
   });
 };
 
+Catalog.prototype.poToMessages = function poToMessages (po, options) {
+  options = options || {};
+
+  var domain = options.domain || this.defaultDomain;
+  var parsedPO = PO.parse(po);
+
+  var result = {};
+  result[domain] = {};
+
+  return parsedPO.items.reduce(function (result, item) {
+    var key = this.messageToKey(item.msgid, item.msgctxt);
+    result[domain][key] = {
+      msgid: item.msgid,
+      msgctxt: item.msgctxt,
+      msgid_plural: item.msgid_plural,
+      references: item.references.map(function (r) {
+        var parts = r.split(':');
+        return {
+          filename: parts[0],
+          firstLine: parts[1]
+        };
+      }),
+      extractedComments: item.extractedComments
+    };
+    return result;
+  }.bind(this), result);
+};
+
 /**
  *
  * @returns {Array} array of pofile instances, 1 for each domain
  */
 Catalog.prototype.toPOs = function toPOs () {
-  var strings = this.strings;
+  var strings = this.messages;
   var pos = Object.keys(strings).map(function (domain) {
     var po = new PO();
     po.headers = {
@@ -95,12 +186,12 @@ Catalog.prototype.toPOs = function toPOs () {
       item.msgid = message.msgid;
       item.msgctxt = message.msgctxt;
       item.msgid_plural = message.msgid_plural;
-      item.extractedComments = message.extractedComments.map(function (c) {
+      item.extractedComments = (message.extractedComments || []).map(function (c) {
         return c; // this will change once #8 is implemented
       });
 
       // convert references to strings
-      item.references = message.references.reduce(function (refs, r) {
+      item.references = (message.references || []).reduce(function (refs, r) {
         if (!r.filename && !r.firstLine && r.firstLine !== 0) {
           // don't add empty references
           return refs;

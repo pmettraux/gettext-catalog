@@ -1,6 +1,6 @@
 # gettext-catalog
 
-> Keep track of extracted gettext strings across multiple files
+> Manage a catalog of gettext messages
 
 ## Why?
 

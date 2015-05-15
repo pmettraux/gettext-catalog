@@ -1,7 +1,7 @@
 {
   "name": "gettext-catalog",
   "version": "0.0.1",
-  "description": "Keep track of extracted gettext strings across multiple files",
+  "description": "Manage a catalog of gettext messages",
   "author": "Gabe Gorelick",
   "license": "MIT",
   "keywords": [

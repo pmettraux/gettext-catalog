@@ -6,7 +6,7 @@ require('should');
 describe('.toPOs', function () {
   it('should work', function () {
     var catalog = new Catalog();
-    catalog.addStrings({
+    catalog.addMessages({
       messages: {
         msgid1: {
           msgid: 'msgid1',

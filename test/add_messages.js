@@ -3,10 +3,10 @@
 var Catalog = require('..');
 require('should');
 
-describe('.addStrings()', function () {
-  it('should add strings to .strings', function () {
+describe('.addMessages()', function () {
+  it('should add messages to .messages', function () {
     var catalog = new Catalog();
-    var strings = {
+    var messages = {
       messages: {
         msgid1: {
           msgid: 'msgid1',
@@ -15,14 +15,14 @@ describe('.addStrings()', function () {
         }
       }
     };
-    catalog.addStrings(strings);
+    catalog.addMessages(messages);
 
-    catalog.strings.should.eql(strings);
+    catalog.messages.should.eql(messages);
   });
 
-  it('should combine identical strings', function () {
+  it('should combine identical messages', function () {
     var catalog = new Catalog();
-    catalog.addStrings({
+    catalog.addMessages({
       messages: {
         msgid1: {
           msgid: 'msgid1',
@@ -38,7 +38,7 @@ describe('.addStrings()', function () {
         }
       }
     });
-    catalog.addStrings({
+    catalog.addMessages({
       messages: {
         msgid1: {
           msgid: 'msgid1',
@@ -55,7 +55,7 @@ describe('.addStrings()', function () {
       }
     });
 
-    catalog.strings.should.eql({
+    catalog.messages.should.eql({
       messages: {
         msgid1: {
           msgid: 'msgid1',
@@ -79,16 +79,16 @@ describe('.addStrings()', function () {
     });
   });
 
-  it("shouldn't combine strings with different domains", function () {
+  it("shouldn't combine.messages with different domains", function () {
     var catalog = new Catalog();
-    catalog.addStrings({
+    catalog.addMessages({
       domain1: {
         msgid1: {
           msgid: 'msgid1'
         }
       }
     });
-    catalog.addStrings({
+    catalog.addMessages({
       domain2: {
         msgid1: {
           msgid: 'msgid1'
@@ -96,7 +96,7 @@ describe('.addStrings()', function () {
       }
     });
 
-    catalog.strings.should.eql({
+    catalog.messages.should.eql({
       domain1: {
         msgid1: {
           msgid: 'msgid1'
@@ -110,9 +110,9 @@ describe('.addStrings()', function () {
     });
   });
 
-  it("shouldn't combine strings with different contexts", function () {
+  it("shouldn't combine.messages with different contexts", function () {
     var catalog = new Catalog();
-    catalog.addStrings({
+    catalog.addMessages({
       messages: {
         'context\u0004msgid1': {
           msgid: 'msgid1',
@@ -120,7 +120,7 @@ describe('.addStrings()', function () {
         }
       }
     });
-    catalog.addStrings({
+    catalog.addMessages({
       messages: {
         msgid1: {
           msgid: 'msgid1'
@@ -128,7 +128,7 @@ describe('.addStrings()', function () {
       }
     });
 
-    catalog.strings.should.eql({
+    catalog.messages.should.eql({
       messages: {
         msgid1: {
           msgid: 'msgid1'
@@ -143,7 +143,7 @@ describe('.addStrings()', function () {
 
   it("shouldn't add duplicate references", function () {
     var catalog = new Catalog();
-    var strings = {
+    var messages = {
       messages: {
         msgid1: {
           msgid: 'msgid1',
@@ -156,17 +156,17 @@ describe('.addStrings()', function () {
         }
       }
     };
-    catalog.addStrings(strings);
-    catalog.addStrings(strings);
+    catalog.addMessages(messages);
+    catalog.addMessages(messages);
 
-    catalog.strings.messages.should.have.keys('msgid1');
-    catalog.strings.messages.msgid1.references.length.should.equal(1);
+    catalog.messages.messages.should.have.keys('msgid1');
+    catalog.messages.messages.msgid1.references.length.should.equal(1);
   });
 
   describe('should sort references', function () {
     it('by filename first', function () {
       var catalog = new Catalog();
-      catalog.addStrings({
+      catalog.addMessages({
         messages: {
           msgid1: {
             msgid: 'msgid1',
@@ -179,7 +179,7 @@ describe('.addStrings()', function () {
           }
         }
       });
-      catalog.addStrings({
+      catalog.addMessages({
         messages: {
           msgid1: {
             msgid: 'msgid1',
@@ -193,12 +193,12 @@ describe('.addStrings()', function () {
         }
       });
 
-      catalog.strings.messages.msgid1.references.should.eql([{filename: 'a'}, {filename: 'b'}]);
+      catalog.messages.messages.msgid1.references.should.eql([{filename: 'a'}, {filename: 'b'}]);
     });
 
     it('then by line number', function () {
       var catalog = new Catalog();
-      catalog.addStrings({
+      catalog.addMessages({
         messages: {
           msgid1: {
             msgid: 'msgid1',
@@ -211,7 +211,7 @@ describe('.addStrings()', function () {
           }
         }
       });
-      catalog.addStrings({
+      catalog.addMessages({
         messages: {
           msgid1: {
             msgid: 'msgid1',
@@ -225,12 +225,12 @@ describe('.addStrings()', function () {
         }
       });
 
-      catalog.strings.messages.msgid1.references.should.eql([{firstLine: 1}, {firstLine: 2}]);
+      catalog.messages.messages.msgid1.references.should.eql([{firstLine: 1}, {firstLine: 2}]);
     });
 
     it('then by column number', function () {
       var catalog = new Catalog();
-      catalog.addStrings({
+      catalog.addMessages({
         messages: {
           msgid1: {
             msgid: 'msgid1',
@@ -244,7 +244,7 @@ describe('.addStrings()', function () {
           }
         }
       });
-      catalog.addStrings({
+      catalog.addMessages({
         messages: {
           msgid1: {
             msgid: 'msgid1',
@@ -259,7 +259,7 @@ describe('.addStrings()', function () {
         }
       });
 
-      catalog.strings.messages.msgid1.references.should.eql([
+      catalog.messages.messages.msgid1.references.should.eql([
         {firstLine: 1, firstColumn: 1},
         {firstLine: 1, firstColumn: 2}
       ]);
