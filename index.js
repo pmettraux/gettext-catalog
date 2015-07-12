@@ -68,7 +68,7 @@ Catalog.DEFAULT_IDENTIFIERS = (function () {
 // Same as what Jed.js uses
 Catalog.CONTEXT_DELIMITER = String.fromCharCode(4);
 
-Catalog.prototype.messageToKey = function messageToKey (msgid, msgctxt) {
+Catalog.messageToKey = Catalog.prototype.messageToKey = function messageToKey (msgid, msgctxt) {
   return msgctxt ? msgctxt + Catalog.CONTEXT_DELIMITER + msgid : msgid;
 };
 
