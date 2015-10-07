@@ -205,6 +205,11 @@ Catalog.prototype.toPOs = function toPOs () {
         refs.push(ref);
         return refs;
       }, []);
+      
+      // generate msgstr for msgid_plural properly
+      if (item.msgid_plural !== null) {
+        item.msgstr = ['', ''];
+      }
 
       po.items.push(item);
     });
